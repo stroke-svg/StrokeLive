@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Unit Stroke - RSPAD Gatot Soebroto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-image: linear-gradient(rgba(248, 250, 252, 0.94), rgba(248, 250, 252, 0.94)), 
+                              url('https://rspadgs.mil.id/thumbs/680x420c/2025-12/gedung-buat-plakat.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+        }
+        .bg-rspad { background-color: #800000; }
+        .sidebar-active { background: rgba(255,255,255,0.15); border-right: 4px solid #fbbf24; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        input, select, textarea { border: 2px solid #e2e8f0 !important; transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #800000 !important; ring: 0 !important; outline: none; background-color: #fff; }
+        .form-label-info { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-left: 4px; margin-bottom: 4px; display: block; }
+        .bg-manual { background-color: #fefce8; border: 2px solid #fde047 !important; }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-72 bg-rspad text-white flex flex-col shadow-2xl z-10">
+            <div class="p-8 text-center border-b border-white/10">
+                <div class="w-20 h-20 bg-white rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg p-2">
+                    <img src="https://stikesrspadgs.ac.id/v2/wp-content/uploads/2025/11/LOGO-RSPAD-2-874x1024.png" alt="Logo RSPAD" class="max-h-full w-auto">
+                </div>
+                <h1 class="text-lg font-extrabold tracking-tight italic text-yellow-400">UNIT STROKE</h1>
+                <p class="text-[10px] text-slate-300 uppercase tracking-widest mt-1 font-bold">RSPAD Gatot Soebroto</p>
+            </div>
+            
+            <nav class="flex-1 px-4 py-8 space-y-2">
+                <button onclick="switchTab('input')" id="btn-input" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition sidebar-active">
+                    <i class="fas fa-user-plus"></i> <span class="font-bold text-sm">Registrasi Baru</span>
+                </button>
+                <button onclick="switchTab('monitoring')" id="btn-monitoring" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition text-slate-300">
+                    <i class="fas fa-bed"></i> <span class="font-bold text-sm">Pasien Dirawat</span>
+                </button>
+                <button onclick="switchTab('stats')" id="btn-stats" class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-white/10 transition text-slate-300">
+                    <i class="fas fa-chart-line"></i> <span class="font-bold text-sm">Statistik Bulanan</span>
+                </button>
+            </nav>
+
+            <div class="p-6 bg-black/20 text-center">
+                <h2 class="text-xl font-black text-yellow-400 leading-none uppercase italic">" Bersyukur "</h2>
+                <div id="live-clock" class="text-[10px] font-mono mt-4 opacity-50"></div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white/80 backdrop-blur-md h-20 shadow-sm px-8 flex justify-between items-center border-b">
+                <h2 id="current-tab-title" class="text-xl font-extrabold text-slate-800 italic text-red-900 uppercase">Input Pasien Baru</h2>
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest tracking-tighter italic">Online Database Terkoneksi</span>
+                </div>
+            </header>
+
+            <div class="p-8 overflow-y-auto">
+                
+                <section id="tab-input" class="tab-content active">
+                    <div class="max-w-4xl mx-auto bg-white/95 rounded-3xl shadow-xl border p-10 backdrop-blur-sm">
+                        <form id="patientForm" class="space-y-8">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-1 border-r border-slate-100 pr-4">
+                                    <h3 class="text-xs font-black text-red-900 uppercase tracking-widest border-l-4 border-red-800 pl-3">Data Admisi</h3>
+                                    <p class="text-[10px] text-slate-400 mt-2 font-semibold">RM, Bed, & Jaminan Kesehatan RSPAD.</p>
+                                </div>
+                                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="form-label-info">Nomor Rekam Medis</label>
+                                        <input type="text" name="norm" placeholder="00-00-00" class="w-full bg-slate-50 p-3 rounded-xl font-semibold" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label-info">Nomor Bed</label>
+                                        <input type="text" name="bed" placeholder="S-01" class="w-full bg-slate-50 p-3 rounded-xl font-semibold" required>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="form-label-info">Jaminan Kesehatan</label>
+                                        <select id="insSelect" name="insurance" onchange="checkManual('ins')" class="w-full bg-slate-50 p-3 rounded-xl font-bold text-slate-700">
+                                            <option value="BPJS Dinas AD">BPJS Dinas AD</option>
+                                            <option value="BPJS Purn AD">BPJS Purn AD</option>
+                                            <option value="BPJS Dinas AL">BPJS Dinas AL</option>
+                                            <option value="BPJS Purn AL">BPJS Purn AL</option>
+                                            <option value="BPJS Dinas AU">BPJS Dinas AU</option>
+                                            <option value="BPJS Purn AU">BPJS Purn AU</option>
+                                            <option value="BPJS Mandiri">BPJS Mandiri</option>
+                                            <option value="BPJS Kementrian">BPJS Kementrian</option>
+                                            <option value="BPJS Ketenagakerjaan">BPJS Ketenagakerjaan</option>
+                                            <option value="BPJS PBI">BPJS PBI</option>
+                                            <option value="BPJS Polri">BPJS Polri</option>
+                                            <option value="Tunai/Umum">Tunai/Umum</option>
+                                            <option value="Lainnya">Lainnya (Input Manual)</option>
+                                        </select>
+                                        <input type="text" id="insManual" placeholder="Tulis Jaminan Lainnya..." class="hidden mt-2 w-full p-3 rounded-xl font-semibold bg-manual">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                                <div class="md:col-span-1 border-r border-slate-100 pr-4">
+                                    <h3 class="text-xs font-black text-red-900 uppercase tracking-widest border-l-4 border-red-800 pl-3">Medis & DPJP</h3>
+                                    <p class="text-[10px] text-slate-400 mt-2 font-semibold">Tentukan spesialis pemegang pasien.</p>
+                                </div>
+                                <div class="md:col-span-2 space-y-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="form-label-info">Kategori Spesialis</label>
+                                            <select name="specialist" class="w-full bg-slate-50 p-3 rounded-xl font-bold text-blue-800">
+                                                <option value="Neurologi">Neurologi</option>
+                                                <option value="Bedah Saraf">Bedah Saraf</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label-info">Nama DPJP</label>
+                                            <input type="text" name="dpjp" placeholder="dr. ..., Sp.N / Sp.BS" class="w-full bg-slate-50 p-3 rounded-xl font-semibold" required>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label-info">Diagnosa Stroke</label>
+                                        <select id="diagSelect" name="type" onchange="checkManual('diag')" class="w-full bg-slate-50 p-3 rounded-xl font-bold text-red-800">
+                                            <option value="Stroke Iskemik">Stroke Iskemik</option>
+                                            <option value="Stroke Hemoragik">Stroke Hemoragik</option>
+                                            <option value="Lainnya">Diagnosa Lainnya (Manual)</option>
+                                        </select>
+                                        <input type="text" id="diagManual" placeholder="Tulis Diagnosa Lengkap..." class="hidden mt-2 w-full p-3 rounded-xl font-semibold bg-manual">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                                <div class="md:col-span-1 border-r border-slate-100 pr-4">
+                                    <h3 class="text-xs font-black text-red-900 uppercase tracking-widest border-l-4 border-red-800 pl-3">Identitas Sosio</h3>
+                                    <p class="text-[10px] text-slate-400 mt-2 font-semibold">Informasi pribadi & demografi.</p>
+                                </div>
+                                <div class="md:col-span-2 space-y-4">
+                                    <input type="text" name="name" placeholder="Nama Lengkap Pasien" class="w-full bg-slate-50 p-3 rounded-xl font-semibold uppercase" required>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="form-label-info">Pendidikan</label>
+                                            <select id="eduSelect" name="education" onchange="checkManual('edu')" class="w-full bg-slate-50 p-3 rounded-xl font-bold">
+                                                <option value="SD">SD</option>
+                                                <option value="SMP">SMP</option>
+                                                <option value="SMA">SMA</option>
+                                                <option value="Diploma">Diploma</option>
+                                                <option value="Sarjana">Sarjana</option>
+                                                <option value="Lainnya">Lainnya (Manual)</option>
+                                            </select>
+                                            <input type="text" id="eduManual" placeholder="Tulis Pendidikan..." class="hidden mt-2 w-full p-3 rounded-xl font-semibold bg-manual">
+                                        </div>
+                                        <div>
+                                            <label class="form-label-info">Agama</label>
+                                            <select name="religion" class="w-full bg-slate-50 p-3 rounded-xl font-bold">
+                                                <option value="Islam">Islam</option>
+                                                <option value="Kristen">Kristen</option>
+                                                <option value="Katolik">Katolik</option>
+                                                <option value="Hindu">Hindu</option>
+                                                <option value="Budha">Budha</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <input type="text" name="phone" placeholder="Nomor Telepon Keluarga" class="w-full bg-slate-50 p-3 rounded-xl font-semibold">
+                                    <textarea name="address" rows="2" placeholder="Alamat Domisili Lengkap" class="w-full bg-slate-50 p-3 rounded-xl font-semibold"></textarea>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnSubmit" class="w-full bg-rspad text-white py-5 rounded-2xl font-black text-lg shadow-xl hover:opacity-95 active:scale-95 transition">
+                                <i class="fas fa-cloud-upload-alt mr-2"></i> SIMPAN KE DATABASE UNIT STROKE
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="tab-monitoring" class="tab-content">
+                    <div class="bg-white/95 rounded-3xl shadow-xl border overflow-hidden backdrop-blur-sm">
+                        <div class="p-6 bg-slate-50 border-b flex justify-between items-center">
+                            <h3 class="font-bold text-slate-700 uppercase tracking-widest text-xs italic">Daftar Pasien Dirawat (Unit Stroke)</h3>
+                            <button onclick="loadDataFromServer()" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-[10px] font-black shadow-md">REFRESH DATA</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-white text-slate-400 text-[10px] font-black uppercase border-b">
+                                    <tr>
+                                        <th class="p-6">Bed</th>
+                                        <th class="p-6">Nama & Rekam Medis</th>
+                                        <th class="p-6">Spesialis & DPJP</th>
+                                        <th class="p-6">Jaminan</th>
+                                        <th class="p-6 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="patientList" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="tab-stats" class="tab-content">
+                    <div class="bg-white/90 p-8 rounded-3xl shadow-xl border">
+                        <div class="flex justify-between items-center mb-8 border-b pb-6">
+                            <div>
+                                <h3 class="font-black text-slate-800 uppercase text-sm tracking-widest italic text-red-900">Laporan Bulanan Unit Stroke</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">Neurologi vs Bedah Saraf</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-slate-400 text-[10px] font-black uppercase tracking-tighter">Kapasitas (BOR)</p>
+                                <h4 id="bor-percent" class="text-4xl font-black text-red-800 leading-none">--%</h4>
+                            </div>
+                        </div>
+                        <div class="h-[400px]"><canvas id="monthlyChart"></canvas></div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // GANTI DENGAN URL SCRIPT ANDA
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwU9ApKsmwdQNyYmzE-vij3PBurFzBvhpOT7valAKNcFKvgt5UN-3B7KKP94bCEvdU/exec'; 
+        let myChart;
+
+        // FUNGSI TAMPILKAN INPUT MANUAL JIKA PILIH "LAINNYA"
+        function checkManual(type) {
+            if(type === 'ins') {
+                const s = document.getElementById('insSelect');
+                document.getElementById('insManual').classList.toggle('hidden', s.value !== 'Lainnya');
+            } else if(type === 'diag') {
+                const s = document.getElementById('diagSelect');
+                document.getElementById('diagManual').classList.toggle('hidden', s.value !== 'Lainnya');
+            } else if(type === 'edu') {
+                const s = document.getElementById('eduSelect');
+                document.getElementById('eduManual').classList.toggle('hidden', s.value !== 'Lainnya');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => {
+                b.classList.remove('sidebar-active', 'text-white');
+                b.classList.add('text-slate-300');
+            });
+            document.getElementById('tab-' + tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('sidebar-active', 'text-white');
+            loadDataFromServer();
+        }
+
+        function loadDataFromServer() {
+            const list = document.getElementById('patientList');
+            fetch(scriptURL)
+            .then(res => res.json())
+            .then(response => {
+                const aktif = response.allData.filter(r => r[14] === "Masuk"); // Kolom O
+                
+                // BOR
+                const bor = ((aktif.length / 19) * 100).toFixed(1);
+                document.getElementById('bor-percent').innerText = bor + "%";
+
+                if(document.getElementById('tab-stats').classList.contains('active')) {
+                    renderMonthlyChart(response.monthlyStats);
+                }
+
+                list.innerHTML = '';
+                if(aktif.length === 0) {
+                    list.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold">TIDAK ADA PASIEN AKTIF</td></tr>';
+                }
+
+                aktif.forEach(row => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="p-6 font-black text-red-800 text-lg">${row[3]}</td>
+                        <td class="p-6 font-bold text-slate-700 text-[11px] uppercase">
+                            ${row[1]} <br> <span class="text-[9px] text-slate-400 font-mono">RM: ${row[2]}</span>
+                        </td>
+                        <td class="p-6">
+                            <span class="text-[10px] font-black block text-slate-800 uppercase">${row[5]}</span>
+                            <span class="text-[9px] bg-blue-50 text-blue-600 px-2 rounded-full font-bold uppercase italic">${row[6]}</span>
+                        </td>
+                        <td class="p-6 text-[10px] text-slate-500 font-bold uppercase">${row[8]}</td>
+                        <td class="p-6 text-center">
+                            <button onclick="confirmCheckout('${row[1]}', '${row[3]}')" class="bg-red-50 text-red-600 w-9 h-9 rounded-xl hover:bg-red-600 hover:text-white transition shadow-sm">
+                                <i class="fas fa-door-open"></i>
+                            </button>
+                        </td>
+                    `;
+                    list.appendChild(tr);
+                });
+            });
+        }
+
+        const form = document.getElementById('patientForm');
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            
+            // Ambil nilai: prioritaskan input manual jika ada
+            const insVal = document.getElementById('insSelect').value === 'Lainnya' ? document.getElementById('insManual').value : document.getElementById('insSelect').value;
+            const diagVal = document.getElementById('diagSelect').value === 'Lainnya' ? document.getElementById('diagManual').value : document.getElementById('diagSelect').value;
+            const eduVal = document.getElementById('eduSelect').value === 'Lainnya' ? document.getElementById('eduManual').value : document.getElementById('eduSelect').value;
+
+            if(!insVal || !diagVal) { alert("Data 'Lainnya' belum diisi manual!"); return; }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Sedang Menyimpan...';
+
+            const payload = {
+                name: form.name.value,
+                norm: form.norm.value,
+                bed: form.bed.value,
+                type: diagVal,
+                dpjp: form.dpjp.value,
+                specialist: form.specialist.value,
+                origin: "Unit Stroke", // Default atau bisa ditambah field
+                insurance: insVal,
+                religion: form.religion.value,
+                education: eduVal,
+                phone: form.phone.value,
+                address: form.address.value,
+                status: "Masuk"
+            };
+
+            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+            .then(() => {
+                alert("Pasien Berhasil Terdaftar di Database.");
+                form.reset();
+                // Sembunyikan manual input lagi
+                document.getElementById('insManual').classList.add('hidden');
+                document.getElementById('diagManual').classList.add('hidden');
+                document.getElementById('eduManual').classList.add('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> SIMPAN KE DATABASE UNIT STROKE';
+                loadDataFromServer();
+            });
+        });
+
+        function confirmCheckout(name, bed) {
+            if(confirm(`Pasien ${name} di Bed ${bed} sudah keluar?`)) {
+                fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "checkout", name: name, bed: bed }) })
+                .then(() => {
+                    alert("Checkout Berhasil.");
+                    loadDataFromServer();
+                });
+            }
+        }
+
+        function renderMonthlyChart(stats) {
+            const ctx = document.getElementById('monthlyChart').getContext('2d');
+            if (myChart) myChart.destroy();
+            const labels = Object.keys(stats);
+            const dataNeurologi = labels.map(m => stats[m].neurologi);
+            const dataBedahSaraf = labels.map(m => stats[m].bedahSaraf);
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Pasien Neurologi', data: dataNeurologi, backgroundColor: '#1e40af', borderRadius: 5 },
+                        { label: 'Pasien Bedah Saraf', data: dataBedahSaraf, backgroundColor: '#991b1b', borderRadius: 5 }
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold' } } } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' });
+        }, 1000);
+
+        window.onload = loadDataFromServer;
+    </script>
+</body>
+</html>
