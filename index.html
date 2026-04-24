@@ -2,415 +2,967 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sistem Unit Stroke - RSPAD Gatot Soebroto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STROKE-LINK RSPAD</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/dist/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: #f8fafc;
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), 
+                        url('https://rspadgs.mil.id/thumbs/680x420c/2025-12/gedung-buat-plakat.jpg');
+            background-size: cover;
+            background-attachment: fixed;
         }
-        .bg-rspad { background-color: #800000; }
-        
-        /* Sidebar Desktop */
-        aside { transition: all 0.3s; }
+        .glass {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 2rem;
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .logo-breathe { animation: breathe 4s ease-in-out infinite; }
 
-        /* Mobile Adjustments */
-        @media (max-width: 768px) {
-            .main-container { flex-direction: column !important; }
-            aside { 
-                width: 100% !important; 
-                height: auto !important; 
-            }
-            nav { 
-                display: flex !important; 
-                overflow-x: auto; 
-                padding: 10px !important;
-                gap: 8px;
-                white-space: nowrap;
-            }
-            nav button { 
-                flex: 0 0 auto; 
-                width: auto !important; 
-                padding: 8px 16px !important; 
-                font-size: 12px !important;
-            }
-            .sidebar-active { 
-                border-right: none !important; 
-                border-bottom: 3px solid #fbbf24; 
-                background: rgba(255,255,255,0.1) !important;
-            }
-            .form-card { padding: 1.5rem !important; }
-            .desktop-only { display: none; }
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff; /* Putih solid agar kontras */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0.8rem 1rem;
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.05); /* Bayangan halus ke atas */
+            border-top: 1px solid #f3f4f6;
+            z-index: 100;
+            padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
+        }
+
+        .tab-btn {
+            position: relative;
+            overflow: visible !important; /* KUNCI: Agar cahaya bisa keluar batas */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.4s ease;
         }
 
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Prevent zoom on focus in iOS */
-        input, select, textarea { font-size: 16px !important; border: 2px solid #e2e8f0 !important; }
-        input:focus, select:focus { border-color: #800000 !important; outline: none; }
-        .bg-manual { background-color: #fefce8; border: 2px solid #fde047 !important; }
-        .form-label-info { font-size: 10px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .tab-content.active { display: block; }
+       
+        /* EFEK AMBIENT (Cahaya di belakang) */
+        .active-tab-btn::before {
+            content: "";
+            position: absolute;
+            top: 40%; /* Posisi sedikit ke atas dekat ikon */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            
+            /* Ganti warna ini sesuai tema (contoh biru) */
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, rgba(37, 99, 235, 0) 70%);
+            
+            filter: blur(12px); /* Membuat pendaran halus */
+            z-index: -1; /* Berada di belakang ikon */
+            border-radius: 50%;
+            animation: pulse-glow 2s infinite ease-in-out;
+        }
 
-/* Efek Animasi Bernafas */
-@keyframes breathe {
-    0% { opacity: 0.4; transform: scale(0.98); }
-    50% { opacity: 1; transform: scale(1.05); }
-    100% { opacity: 0.4; transform: scale(0.98); }
+        /* Indikator garis bawah yang juga bercahaya */
+        .active-tab-btn::after {
+            content: "";
+            position: absolute;
+            bottom: 2px;
+            width: 12px;
+            height: 3px;
+            background: #2563eb;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(37, 99, 235, 0.8); /* Glow pada garis */
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.9); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+        }
+
+        /* Pastikan ini tetap ada di bagian bawah <style> Anda */
+        body {
+            /* Gunakan nilai yang sedikit lebih besar dari tinggi navbar Anda */
+            padding-bottom: 100px; 
+        }
+
+        /* Jika Anda ingin lebih presisi untuk layar HP modern */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            body {
+                padding
+
+        .input-wrapper {
+    position: relative;
+    display: flex;
+    items-center: center;
 }
-.animate-breathe {
-    animation: breathe 4s ease-in-out infinite;
+.input-wrapper input {
+    width: 100%;
+    padding-right: 50px; /* Beri ruang agar angka tidak tertutup satuan */
 }
+.input-wrapper {
+    position: relative; /* Pastikan pembungkus adalah patokan posisi */
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper .unit {
+    position: absolute;
+    right: 12px; /* Ubah dari -12px menjadi 12px (positif) */
+    font-size: 10px;
+    font-weight: 800;
+    color: #94a3b8;
+    pointer-events: none;
+    background-color: white; /* Opsional: agar teks satuan punya background bersih */
+    padding-left: 4px;
+}
+
+/* Tambahkan ini agar teks yang diketik user tidak tertimpa satuan */
+.input-wrapper input {
+    padding-right: 45px !important; 
+}
+
     </style>
 </head>
-<body class="text-slate-900 overflow-hidden">
+<body class="min-h-screen pb-12">
 
-    <div class="flex flex-col md:flex-row h-screen main-container">
+    <div id="loginOverlay" class="fixed inset-0 z-[100] flex items-center justify-center bg-green-950">
+    <div class="glass w-full max-w-xs p-8 text-center border-white/20 shadow-2xl">
+        <img src="https://rspadgs.mil.id/thumbs/480x360c/2024-12/bersyukur.png" class="h-20 mx-auto mb-6 logo-breathe">
+        <h2 class="text-white font-black text-sm tracking-[0.3em] mb-8 uppercase">Stroke-Link Access</h2>
         
-        <aside class="w-full md:w-72 bg-rspad text-white flex flex-col shadow-2xl z-20">
-    <div class="p-4 md:p-6 text-center border-b border-white/10 flex flex-col items-center gap-2">
-        <div class="tracking-[0.3em] uppercase italic font-black text-yellow-400 text-[10px] md:text-xs mb-1">
-                   </div>
+        <div class="space-y-4">
+    <input type="text" id="userName" placeholder="Nama Perawat" class="w-full p-4 rounded-2xl bg-white/10 border border-white/20 text-white font-bold text-center">
+    <input type="password" id="pinInput" placeholder="PIN Rahasia" class="w-full p-4 rounded-2xl bg-white/10 border border-white/20 text-white font-black text-center">
+    
+    <button onclick="checkAccess()" class="w-full py-4 bg-green-500 text-white font-black rounded-2xl shadow-lg">OTORISASI PERAWAT</button>
+    
+    <div class="flex items-center my-2">
+        <hr class="flex-1 border-white/20">
+        <span class="px-3 text-[10px] text-white/40 font-bold">ATAU</span>
+        <hr class="flex-1 border-white/20">
+    </div>
+
+    <button onclick="aksesTamu()" class="w-full py-3 bg-white/10 text-white border border-white/40 rounded-2xl font-bold text-xs hover:bg-white/20 transition-all">MASUK SEBAGAI PENGUNJUNG</button>
+</div>
+        <p id="loginError" class="text-red-400 text-[10px] font-bold mt-4 hidden">DATA TIDAK VALID!</p>
+    </div>
+</div>
+
+<div id="userBadge" class="fixed top-4 right-4 z-[60] hidden">
+    <div class="flex items-center gap-2">
+        <div class="bg-black/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
+            <span class="h-2 w-2 bg-green-400 rounded-full animate-pulse"></span>
+            <span id="displayUserName" class="text-[10px] font-black text-white uppercase tracking-tighter"></span>
+        </div>
+        <button onclick="logout()" class="bg-red-600/80 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+        </button>
+    </div>
+</div>
+
+    <header class="text-center pt-10 mb-8">
+        <img src="https://rspadgs.mil.id/thumbs/480x360c/2024-12/bersyukur.png" class="h-24 mx-auto logo-breathe mb-4" alt="Logo RSPAD">
+        <h1 class="text-4xl font-extrabold text-green-900 tracking-tight">STROKE-LINK</h1>
+        <p class="text-[10px] font-black text-green-700 tracking-[0.3em] uppercase">Unit Stroke RSPAD Gatot Soebroto</p>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4">
         
-        <div class="w-12 h-12 md:w-20 md:h-20 bg-white rounded-2xl flex items-center justify-center p-2 shadow-inner">
-            <img src="https://stikesrspadgs.ac.id/v2/wp-content/uploads/2025/11/LOGO-RSPAD-2-874x1024.png" alt="Logo" class="max-h-full object-contain">
+        <nav class="flex justify-between bg-black/5 p-1 rounded-2xl mb-6 backdrop-blur-md">
+            <button onclick="showTab('reg')" id="btn-reg" class="tab-btn flex-1 py-3 text-xs font-bold text-gray-500 rounded-xl transition-all">REGISTRASI</button>
+            <button onclick="showTab('live')" id="btn-live" class="tab-btn flex-1 py-3 text-xs font-bold text-gray-500 rounded-xl transition-all">LIVE REPORT</button>
+            <button onclick="showTab('care')" id="btn-care" class="tab-btn flex-1 py-3 text-xs font-bold text-gray-500 rounded-xl transition-all">STROKE CARE</button>
+        </nav>
+
+        <section id="reg" class="tab-content active glass p-8 shadow-2xl">
+    <h2 class="text-xl font-bold mb-6 text-green-800 flex items-center gap-2 italic">
+        <span>📝</span> Registrasi Pasien Baru
+    </h2>
+    <form id="formReg" class="grid grid-cols-2 gap-4">
+        <input type="text" name="rm" placeholder="No. Rekam Medis" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm" required>
+        <input type="text" name="nama" placeholder="Nama Lengkap Pasien" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm" required>
+        
+        <select name="bed" id="selectBedReg" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm" required>
+    <option value="">Mengambil daftar bed...</option>
+</select>
+        <input type="number" name="bb" placeholder="BB (kg)" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm">
+
+        <input type="text" name="diagnosa" placeholder="Diagnosa Medis" class="p-3 rounded-xl bg-white/60 border-none shadow-inner col-span-2 text-sm" required>
+        
+        <input type="text" name="dpjp" placeholder="Nama DPJP" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm">
+        <select name="spesialisasi" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm font-bold text-blue-800">
+            <option value="">-- Pilih Spesialisasi --</option>
+            <option>Neurologi (Saraf)</option>
+            <option>Bedah Saraf</option>
+            <option>Penyakit Dalam (Interne)</option>
+            <option>Lainnya</option>
+        </select>
+
+        <input type="tel" name="telepon" placeholder="No. Telepon Keluarga" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm">
+        <select name="agama" class="p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm">
+            <option value="">Agama</option>
+            <option>Islam</option><option>Protestan</option><option>Katolik</option><option>Hindu</option><option>Budha</option><option>Khonghucu</option>
+        </select>
+
+        <div class="col-span-1">
+            <select id="selectJaminan" onchange="toggleManualJaminan()" class="w-full p-3 rounded-xl bg-white/60 border-none shadow-inner text-sm">
+                <option value="">Pilih Jaminan</option>
+                <option>BPJS Dinas AD</option><option>BPJS Purn AD</option>
+                <option>BPJS Mandiri</option><option>Tunai/Umum</option>
+                <option value="MANUAL">Lain-lain / Manual...</option>
+            </select>
         </div>
-
-        <div class="mt-2">
-            <h1 class="text-xs md:text-lg font-extrabold tracking-tighter leading-none">UNIT STROKE</h1>
-            <p class="text-[8px] md:text-[9px] text-slate-400 uppercase font-bold tracking-widest mt-1">RSPAD Gatot Soebroto</p>
+        <div id="inputJaminanManual" class="col-span-1 hidden">
+            <input type="text" id="jaminanCustom" placeholder="Sebutkan Jaminan..." class="w-full p-3 rounded-xl bg-green-50 border border-green-200 text-sm font-bold">
         </div>
-    </div>
-            
-            <nav class="flex-1 px-2 md:px-4 py-2 md:py-8 md:space-y-2">
-                <button onclick="switchTab('input')" id="btn-input" class="w-full flex items-center gap-3 p-3 rounded-xl transition sidebar-active">
-                    <i class="fas fa-user-plus"></i> <span class="font-bold">INPUT PASIEN</span>
-                </button>
-                <button onclick="switchTab('monitoring')" id="btn-monitoring" class="w-full flex items-center gap-3 p-3 rounded-xl transition text-slate-300 hover:bg-white/10">
-                    <i class="fas fa-bed"></i> <span class="font-bold">PASIEN RAWAT</span>
-                </button>
-                <button onclick="switchTab('stats')" id="btn-stats" class="w-full flex items-center gap-3 p-3 rounded-xl transition text-slate-300 hover:bg-white/10">
-                    <i class="fas fa-chart-line"></i> <span class="font-bold">STATISTIK</span>
-                </button>
-            </nav>
+        <input type="hidden" name="jaminan" id="finalJaminan">
 
-<div class="p-4 bg-black/20 text-center hidden md:flex flex-col items-center gap-1">
-        <div class="animate-breathe">
-            <span class="text-[11px] font-black tracking-[0.4em] text-yellow-400 italic uppercase">
-                Bersyukur
-            </span>
-        </div>
-        <p id="live-clock" class="text-[10px] font-mono opacity-60 text-slate-300"></p>
-    </div>
-</aside>
-            
-            <div class="p-4 bg-black/20 text-center hidden md:block">
-                <p id="live-clock" class="text-[10px] font-mono opacity-60"></p>
-            </div>
+        <textarea name="alamat" placeholder="Alamat Lengkap Pasien" class="p-3 rounded-xl bg-white/60 border-none shadow-inner col-span-2 text-sm h-16"></textarea>
 
-        </aside>
+        <button type="button" onclick="kirimData()" id="btnSimpan" class="col-span-2 bg-green-700 text-white font-black py-4 rounded-2xl shadow-lg mt-2 hover:bg-green-800 transition-all active:scale-95 uppercase text-xs tracking-widest">
+            Simpan ke Database Unit Stroke
+        </button>
+    </form>
+</section>
 
-        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
-            <header class="bg-white shadow-sm px-6 py-4 flex justify-between items-center border-b z-10">
-                <h2 id="current-tab-title" class="text-sm md:text-lg font-black text-slate-800 italic uppercase">Registrasi Pasien Baru</h2>
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span class="text-[9px] font-bold text-slate-400 uppercase hidden md:block">Database Online</span>
+        <section id="live" class="tab-content glass p-8 shadow-2xl">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-black text-blue-900 uppercase">Live Report</h2>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Kondisi Aktif Unit Stroke</p>
                 </div>
-            </header>
-
-            <div class="flex-1 overflow-y-auto p-4 md:p-8">
-                
-                <section id="tab-input" class="tab-content active">
-                    <div class="max-w-4xl mx-auto bg-white rounded-2xl md:rounded-3xl shadow-xl border p-6 md:p-10 form-card">
-                        <form id="patientForm" class="space-y-6 md:space-y-8">
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="md:col-span-1">
-                                    <h3 class="text-xs font-black text-red-900 uppercase border-l-4 border-red-800 pl-2">Data Admisi</h3>
-                                </div>
-                                <div class="md:col-span-2 grid grid-cols-2 gap-4">
-                                    <div class="col-span-1">
-                                        <label class="form-label-info">No. Rekam Medis</label>
-                                        <input type="text" name="norm" placeholder="00-00-00" class="w-full p-3 rounded-xl font-bold bg-slate-50" required>
-                                    </div>
-                                    <div class="col-span-1">
-                                        <label class="form-label-info">No. Bed</label>
-                                        <input type="text" name="bed" placeholder="S-01" class="w-full p-3 rounded-xl font-bold bg-slate-50" required>
-                                    </div>
-                                    <div class="col-span-2">
-                                        <label class="form-label-info">Jaminan Kesehatan</label>
-                                        <select id="insSelect" name="insurance" onchange="checkManual('ins')" class="w-full p-3 rounded-xl font-bold bg-slate-50">
-                                            <option value="BPJS Dinas AD">BPJS Dinas AD</option>
-                                            <option value="BPJS Purn AD">BPJS Purn AD</option>
-                                            <option value="BPJS Dinas AL">BPJS Dinas AL</option>
-                                            <option value="BPJS Purn AL">BPJS Purn AL</option>
-                                            <option value="BPJS Dinas AU">BPJS Dinas AU</option>
-                                            <option value="BPJS Purn AU">BPJS Purn AU</option>
-                                            <option value="BPJS Mandiri">BPJS Mandiri</option>
-                                            <option value="BPJS Kementrian">BPJS Kementrian</option>
-                                            <option value="BPJS Ketenagakerjaan">BPJS Ketenagakerjaan</option>
-                                            <option value="BPJS PBI">BPJS PBI</option>
-                                            <option value="BPJS Polri">BPJS Polri</option>
-                                            <option value="Tunai/Umum">Tunai/Umum</option>
-                                            <option value="Lainnya">Lainnya (Manual)</option>
-                                        </select>
-                                        <input type="text" id="insManual" placeholder="Sebutkan Jaminan..." class="hidden mt-2 w-full p-3 rounded-xl font-semibold bg-manual">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
-                                <div class="md:col-span-1">
-                                    <h3 class="text-xs font-black text-red-900 uppercase border-l-4 border-red-800 pl-2">Medis & DPJP</h3>
-                                </div>
-                                <div class="md:col-span-2 space-y-4">
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label class="form-label-info">Kategori</label>
-                                            <select name="specialist" class="w-full p-3 rounded-xl font-bold bg-slate-50 text-blue-700">
-                                                <option value="Neurologi">Neurologi</option>
-                                                <option value="Bedah Saraf">Bedah Saraf</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label class="form-label-info">Nama DPJP</label>
-                                            <input type="text" name="dpjp" placeholder="dr. ..., Sp.N" class="w-full p-3 rounded-xl font-bold bg-slate-50" required>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="form-label-info">Diagnosa Stroke</label>
-                                        <select id="diagSelect" name="type" onchange="checkManual('diag')" class="w-full p-3 rounded-xl font-bold bg-slate-50 text-red-800">
-                                            <option value="Stroke Iskemik">Stroke Iskemik</option>
-                                            <option value="Stroke Hemoragik">Stroke Hemoragik</option>
-                                            <option value="Lainnya">Lainnya (Manual)</option>
-                                        </select>
-                                        <input type="text" id="diagManual" placeholder="Tulis Diagnosa Lengkap..." class="hidden mt-2 w-full p-3 rounded-xl font-semibold bg-manual">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
-                                <div class="md:col-span-1">
-                                    <h3 class="text-xs font-black text-red-900 uppercase border-l-4 border-red-800 pl-2">Identitas</h3>
-                                </div>
-                                <div class="md:col-span-2 space-y-4">
-                                    <input type="text" name="name" placeholder="Nama Lengkap Pasien" class="w-full p-3 rounded-xl font-bold bg-slate-50 uppercase" required>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <select id="eduSelect" name="education" onchange="checkManual('edu')" class="w-full p-3 rounded-xl font-bold bg-slate-50">
-                                            <option value="SD">SD</option>
-                                            <option value="SMP">SMP</option>
-                                            <option value="SMA">SMA</option>
-                                            <option value="Diploma">Diploma</option>
-                                            <option value="Sarjana">Sarjana</option>
-                                            <option value="Lainnya">Lainnya (Manual)</option>
-                                        </select>
-                                        <select name="religion" class="w-full p-3 rounded-xl font-bold bg-slate-50">
-                                            <option value="Islam">Islam</option>
-                                            <option value="Kristen">Kristen</option>
-                                            <option value="Katolik">Katolik</option>
-                                            <option value="Hindu">Hindu</option>
-                                            <option value="Budha">Budha</option>
-                                        </select>
-                                    </div>
-                                    <input type="text" id="eduManual" placeholder="Tulis Pendidikan..." class="hidden w-full p-3 rounded-xl font-semibold bg-manual">
-                                    <input type="text" name="phone" placeholder="No. HP Keluarga" class="w-full p-3 rounded-xl font-bold bg-slate-50">
-                                    <textarea name="address" rows="2" placeholder="Alamat Lengkap" class="w-full p-3 rounded-xl font-bold bg-slate-50"></textarea>
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btnSubmit" class="w-full bg-rspad text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:brightness-110 active:scale-[0.98] transition">
-                                <i class="fas fa-save mr-2"></i> SIMPAN DATA
-                            </button>
-                        </form>
-                    </div>
-                </section>
-
-                <section id="tab-monitoring" class="tab-content">
-                    <div class="bg-white rounded-2xl shadow-xl border overflow-hidden">
-                        <div class="p-4 bg-slate-50 border-b flex justify-between items-center">
-                            <h3 class="font-black text-slate-700 text-xs uppercase tracking-widest italic">Pasien Dirawat</h3>
-                            <button onclick="loadDataFromServer()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-[10px] font-black">REFRESH</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left min-w-[600px]">
-                                <thead class="bg-white text-slate-400 text-[10px] font-black uppercase border-b">
-                                    <tr>
-                                        <th class="p-4">Bed</th>
-                                        <th class="p-4">Nama / RM</th>
-                                        <th class="p-4">Spesialis / DPJP</th>
-                                        <th class="p-4">Jaminan</th>
-                                        <th class="p-4 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="patientList" class="divide-y divide-slate-100 text-sm"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="tab-stats" class="tab-content">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div class="bg-white p-6 rounded-2xl shadow-md border text-center">
-                            <p class="text-[10px] font-black text-slate-400 uppercase">BOR (19 Bed)</p>
-                            <h4 id="bor-percent" class="text-4xl font-black text-red-800">--%</h4>
-                        </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-xl border">
-                        <h3 class="font-black text-slate-800 text-xs uppercase mb-6 italic">Statistik Bulanan: Neurologi vs Bedah Saraf</h3>
-                        <div class="h-80 md:h-[450px]"><canvas id="monthlyChart"></canvas></div>
-                    </div>
-                </section>
-
+                <div id="borDisplay" class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-black italic">BOR: --%</div>
             </div>
-        </main>
+            <div id="loadingPasien" class="text-center py-10 text-xs font-bold text-gray-400 animate-pulse">Sinkronisasi Database...</div>
+            <div id="containerPasien" class="space-y-4"></div>
+        </section>
+
+        <section id="care" class="tab-content glass p-8 shadow-2xl">
+            <h2 class="text-xl font-black mb-6 text-red-800 border-b border-red-100 pb-2 italic">StrokeCare & Clinical Report</h2>
+            
+            <div class="mb-6">
+                <label class="text-[10px] font-black text-gray-400 uppercase ml-2">Pencarian Pasien Otomatis:</label>
+                <select id="selectPasienSOAP" class="w-full p-4 rounded-2xl bg-white/60 border-none shadow-md font-bold text-gray-700 mt-1">
+                    <option value="">-- Cari Nama / No RM --</option>
+                </select>
+            </div>
+
+            <div class="space-y-4 bg-white/30 p-4 rounded-3xl mb-4 border border-white">
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-widest">S (Subjective)</p>
+                <textarea id="soapRPS" placeholder="RPS (Keluhan Utama, Onset, Lokasi...)" class="w-full p-3 rounded-xl bg-white/50 border-none text-sm"></textarea>
+                <textarea id="soapRPO" placeholder="RPO (Riwayat Penggunaan Obat...)" class="w-full p-3 rounded-xl bg-white/50 border-none text-sm"></textarea>
+                <textarea id="soapRPD" placeholder="RPD (Riwayat Penyakit Dahulu...)" class="w-full p-3 rounded-xl bg-white/50 border-none text-sm"></textarea>
+            </div>
+
+            <div class="space-y-4 bg-white/30 p-4 rounded-3xl mb-4 border border-white">
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-widest">O (Objective)</p>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+    <div class="input-wrapper">
+        <input type="text" id="ttvTD" placeholder="120/80" class="p-3 rounded-xl bg-white/50 text-xs text-center font-bold">
+        <span class="unit">mmHg</span>
     </div>
+    
+    <div class="input-wrapper">
+        <input type="number" id="ttvHR" placeholder="80" class="p-3 rounded-xl bg-white/50 text-xs text-center font-bold">
+        <span class="unit">x/mnt</span>
+    </div>
+    
+    <div class="input-wrapper">
+        <input type="number" id="ttvRR" placeholder="20" class="p-3 rounded-xl bg-white/50 text-xs text-center font-bold">
+        <span class="unit">x/mnt</span>
+    </div>
+    
+    <div class="input-wrapper">
+        <input type="number" step="0.1" id="ttvSuhu" placeholder="36.5" class="p-3 rounded-xl bg-white/50 text-xs text-center font-bold">
+        <span class="unit">°C</span>
+    </div>
+</div>
+                <div class="p-4 bg-white/50 rounded-2xl text-center">
+                    <p class="text-[10px] font-black mb-3">KALKULATOR GCS (O)</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="number" id="gcsE" oninput="hitungGCS()" placeholder="E" class="p-2 rounded-lg border-none bg-white text-center font-bold">
+                        <input type="number" id="gcsV" oninput="hitungGCS()" placeholder="V" class="p-2 rounded-lg border-none bg-white text-center font-bold">
+                        <input type="number" id="gcsM" oninput="hitungGCS()" placeholder="M" class="p-2 rounded-lg border-none bg-white text-center font-bold">
+                    </div>
+                    <div class="mt-2 text-sm font-black text-red-700 italic">GCS: <span id="totalGCS">0</span></div>
+                </div>
+                <textarea id="statusNeurologis" placeholder="Pemeriksaan Neurologis (Nn. Craniales, Motorik, Sensorik...)" class="w-full p-3 rounded-xl bg-white/50 border-none text-sm"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-6">
+                <textarea id="soapA" placeholder="Assesment (A)" class="p-3 rounded-xl bg-white/50 border-none text-sm h-32"></textarea>
+                <textarea id="soapP" placeholder="Planning (P)" class="p-3 rounded-xl bg-white/50 border-none text-sm h-32"></textarea>
+            </div>
+
+            <button onclick="kirimWhatsApp()" class="w-full bg-green-600 text-white font-black py-5 rounded-3xl shadow-xl flex justify-center items-center gap-2 active:scale-95 transition-all mb-2">
+    <span>📲</span> LAPORKAN SOAP (WA)
+</button>
+
+<div class="relative flex py-5 items-center">
+    <div class="flex-grow border-t border-gray-300"></div>
+    <span class="flex-shrink mx-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Alat Medis</span>
+    <div class="flex-grow border-t border-gray-300"></div>
+</div>
+
+<button onclick="toggleModalObat()" class="w-full py-4 rounded-2xl border border-red-200 bg-red-50/50 text-red-700 text-[11px] font-black uppercase tracking-widest hover:bg-red-100 transition-all">
+    💊 Drug Calculator (Syringe Pump)
+</button>
+
+        </section>
+
+    </main>
 
     <script>
-        // GANTI URL INI DENGAN URL APPS SCRIPT ANDA
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwU9ApKsmwdQNyYmzE-vij3PBurFzBvhpOT7valAKNcFKvgt5UN-3B7KKP94bCEvdU/exec'; 
-        let myChart;
+    // --- KONFIGURASI GLOBAL ---
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby2l4IXu5zo9pXj-Sy1dnPrNQXHASrpH3BEAUReJCFnR2fErN0-ktjCIIbAySzxREk6/exec";
+    const SECRET_PIN = "1234";
+    let dataGlobal = [];
 
-        function checkManual(type) {
-            if(type === 'ins') {
-                const s = document.getElementById('insSelect');
-                document.getElementById('insManual').classList.toggle('hidden', s.value !== 'Lainnya');
-            } else if(type === 'diag') {
-                const s = document.getElementById('diagSelect');
-                document.getElementById('diagManual').classList.toggle('hidden', s.value !== 'Lainnya');
-            } else if(type === 'edu') {
-                const s = document.getElementById('eduSelect');
-                document.getElementById('eduManual').classList.toggle('hidden', s.value !== 'Lainnya');
-            }
+    // --- 1. MANAJEMEN AKSES & LOGIN ---
+
+    function checkAccess() {
+        const user = document.getElementById('userName').value;
+        const pin = document.getElementById('pinInput').value;
+
+        if (pin === SECRET_PIN && user.trim().length >= 3) {
+            sessionStorage.setItem('isLoggedIn', 'true');
+            sessionStorage.setItem('currentUser', user);
+            sessionStorage.setItem('role', 'admin'); // Role Admin/Perawat
+            loginSuccess(user);
+        } else {
+            alert("Akses Ditolak! Pastikan Nama diisi (min 3 huruf) dan PIN benar.");
         }
+    }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(b => {
-                b.classList.remove('sidebar-active', 'text-white');
-                b.classList.add('text-slate-300');
-            });
-            document.getElementById('tab-' + tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('sidebar-active', 'text-white');
-            
-            const titles = { 'input': 'Registrasi Pasien Baru', 'monitoring': 'Daftar Pasien Aktif', 'stats': 'Laporan Statistik Unit' };
-            document.getElementById('current-tab-title').innerText = titles[tabId];
-            loadDataFromServer();
-        }
+    function aksesTamu() {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        sessionStorage.setItem('currentUser', 'Pengunjung');
+        sessionStorage.setItem('role', 'guest'); 
+        loginSuccess('Pengunjung');
+    }
 
-        function loadDataFromServer() {
-            const list = document.getElementById('patientList');
-            fetch(scriptURL)
-            .then(res => res.json())
-            .then(response => {
-                const aktif = response.allData.filter(r => r[14] === "Masuk");
-                document.getElementById('bor-percent').innerText = ((aktif.length / 19) * 100).toFixed(1) + "%";
+    function loginSuccess(u) {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('userBadge').classList.remove('hidden');
+        document.getElementById('displayUserName').innerText = u;
+        
+        // Jalankan proteksi menu berdasarkan role
+        aturTampilanRole();
 
-                if(document.getElementById('tab-stats').classList.contains('active')) {
-                    renderMonthlyChart(response.monthlyStats);
-                }
+        showTab('live'); // Default ke Live Report
+        fetchPasien();
+    }
+    function logout() {
+        sessionStorage.clear();
+        location.reload();
+    }
 
-                list.innerHTML = '';
-                if(aktif.length === 0) {
-                    list.innerHTML = '<tr><td colspan="5" class="p-10 text-center text-slate-400 font-bold uppercase">Kamar Kosong</td></tr>';
-                }
+    // --- 2. NAVIGASI & TAB ---
 
-                aktif.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50";
-                    tr.innerHTML = `
-                        <td class="p-4 font-black text-red-800 text-lg">${row[3]}</td>
-                        <td class="p-4 font-bold text-slate-700 uppercase leading-tight">
-                            ${row[1]} <br> <span class="text-[9px] text-slate-400 font-mono italic">RM: ${row[2]}</span>
-                        </td>
-                        <td class="p-4">
-                            <span class="text-[10px] font-black block text-slate-800">${row[5]}</span>
-                            <span class="text-[9px] bg-blue-50 text-blue-700 px-2 rounded-full font-bold uppercase italic">${row[6]}</span>
-                        </td>
-                        <td class="p-4 text-[10px] text-slate-500 font-bold uppercase">${row[8]}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="confirmCheckout('${row[1]}', '${row[3]}')" class="bg-red-50 text-red-600 w-9 h-9 rounded-xl hover:bg-red-600 hover:text-white transition">
-                                <i class="fas fa-door-open"></i>
-                            </button>
-                        </td>
-                    `;
-                    list.appendChild(tr);
-                });
-            });
-        }
-
-        const form = document.getElementById('patientForm');
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
-            
-            const insVal = document.getElementById('insSelect').value === 'Lainnya' ? document.getElementById('insManual').value : document.getElementById('insSelect').value;
-            const diagVal = document.getElementById('diagSelect').value === 'Lainnya' ? document.getElementById('diagManual').value : document.getElementById('diagSelect').value;
-            const eduVal = document.getElementById('eduSelect').value === 'Lainnya' ? document.getElementById('eduManual').value : document.getElementById('eduSelect').value;
-
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> PROSES...';
-
-            const payload = {
-                name: form.name.value, norm: form.norm.value, bed: form.bed.value, type: diagVal,
-                dpjp: form.dpjp.value, specialist: form.specialist.value, origin: "Unit Stroke",
-                insurance: insVal, religion: form.religion.value, education: eduVal,
-                phone: form.phone.value, address: form.address.value, status: "Masuk"
-            };
-
-            fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-            .then(() => {
-                alert("Data Berhasil Disimpan.");
-                form.reset();
-                document.querySelectorAll('.bg-manual').forEach(el => el.classList.add('hidden'));
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save mr-2"></i> SIMPAN DATA';
-                loadDataFromServer();
-            });
+    function showTab(tabId) {
+        // 1. Sembunyikan semua konten
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+            tab.style.display = 'none';
+        });
+        
+        // 2. Reset semua tombol navigasi
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active-tab-btn');
+            btn.style.opacity = "0.4";
         });
 
-        function confirmCheckout(name, bed) {
-            if(confirm(`Pasien ${name} (Bed ${bed}) Keluar?`)) {
-                fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "checkout", name: name, bed: bed }) })
-                .then(() => loadDataFromServer());
+        // 3. Aktifkan tab yang dipilih
+        const targetTab = document.getElementById(tabId);
+        const targetBtn = document.getElementById('btn-' + tabId);
+
+        if (targetTab) {
+            targetTab.classList.add('active');
+            targetTab.style.display = 'block';
+            window.scrollTo(0,0);
+        }
+        
+        if (targetBtn) {
+            targetBtn.classList.add('active-tab-btn');
+            targetBtn.style.opacity = "1";
+        }
+
+        // 4. Load data jika masuk ke menu Live Report atau Stroke Care
+        if (tabId === 'live' || tabId === 'care') {
+            fetchPasien();
+        }
+        if (tabId === 'reg') {
+            updateAvailableBeds();
+        }
+    }
+
+    // --- 3. MANAJEMEN DATA PASIEN ---
+
+    async function updateAvailableBeds() {
+        const selectBed = document.getElementById('selectBedReg');
+        try {
+            const res = await fetch(WEB_APP_URL + "?action=getAvailableBeds");
+            const beds = await res.json();
+            selectBed.innerHTML = '<option value="">-- Pilih Bed Tersedia --</option>';
+            
+            if (beds.length === 0) {
+                selectBed.innerHTML = '<option value="">KAMAR PENUH</option>';
+            } else {
+                beds.forEach(bed => {
+                    let opt = document.createElement('option');
+                    opt.value = bed;
+                    opt.text = "Bed " + bed;
+                    selectBed.add(opt);
+                });
+            }
+        } catch (e) {
+            selectBed.innerHTML = '<option value="">Gagal memuat bed</option>';
+        }
+    }
+
+    async function fetchPasien() {
+        const container = document.getElementById('containerPasien');
+        const loader = document.getElementById('loadingPasien');
+        const dropdown = document.getElementById('selectPasienSOAP');
+        const role = sessionStorage.getItem('role');
+
+        try {
+            if(loader) loader.style.display = 'block';
+            const res = await fetch(WEB_APP_URL + "?action=getPasienAktif");
+            let data = await res.json();
+
+            // Sorting berdasarkan Bed
+            data.sort((a, b) => a[2].toString().localeCompare(b[2].toString(), undefined, {numeric: true}));
+
+            dataGlobal = data;
+            if(loader) loader.style.display = 'none';
+            container.innerHTML = "";
+            
+            if(dropdown) {
+                dropdown.innerHTML = '<option value="">-- Cari Nama / No RM --</option>';
+            }
+
+            data.forEach(p => {
+                const badgeColor = p[7] === "Bedah Saraf" ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700";
+                
+                // 1. Logika Klik Detail: Hanya aktif jika BUKAN guest
+                // Jika guest, kita buat pointer-events-none atau hilangkan fungsi kliknya
+                const klikAksi = (role !== 'guest') 
+                    ? `onclick='bukaDetailPasien(${JSON.stringify(p)})'` 
+                    : `onclick="alert('Mode Guest: Tidak diizinkan melihat detail medis')"`;
+
+                const cursorClass = (role !== 'guest') ? 'cursor-pointer' : 'cursor-default';
+
+                // 2. Tombol Pulang: Tetap hanya untuk perawat (bukan guest)
+                const tombolPulang = (role !== 'guest') 
+                    ? `<button onclick="event.stopPropagation(); aksiPulangkan('${p[1]}')" class="ml-4 bg-gray-50 text-gray-400 p-3 rounded-2xl text-[9px] font-black border border-gray-100 hover:bg-red-600 hover:text-white transition-all uppercase">Pulang</button>` 
+                    : '';
+
+                // Render Kartu Pasien
+                container.innerHTML += `
+                    <div ${klikAksi} class="bg-white/80 p-5 rounded-[1.5rem] shadow-sm flex justify-between items-center border-l-8 ${p[7] === 'Bedah Saraf' ? 'border-red-500' : 'border-blue-500'} animate-fade-in mb-3 ${cursorClass}">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">BED ${p[2]}</p>
+                                <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase ${badgeColor}">${p[7]}</span>
+                            </div>
+                            <p class="font-extrabold text-gray-800 text-lg leading-tight">${p[3]}</p>
+                            <p class="text-[10px] text-gray-500 font-bold tracking-tighter uppercase mt-1">
+                                RM: ${p[1]} | DPJP: ${p[6] || '-'}
+                            </p>
+                        </div>
+                        ${tombolPulang}
+                    </div>`;
+                
+                // Dropdown SOAP tetap diisi (biasanya menu SOAP sendiri sudah disembunyikan untuk Guest di level UI)
+                if(dropdown) {
+                    let opt = document.createElement('option');
+                    opt.value = JSON.stringify(p);
+                    opt.text = `${p[3]} (RM: ${p[1]}) - Bed ${p[2]}`;
+                    dropdown.add(opt);
+                }
+            });
+
+            let bor = (data.length / 19 * 100).toFixed(1);
+            const elBor = document.getElementById('borDisplay');
+            if(elBor) elBor.innerText = `BOR: ${bor}%`;
+
+        } catch (e) { 
+            console.error(e);
+            if(loader) loader.innerText = "Gagal memuat data..."; 
+        }
+    }
+
+    // --- 4. OPERASIONAL (REGISTRASI, WA, PULANG) ---
+
+    async function kirimData() {
+        const btn = document.getElementById('btnSimpan');
+        const form = document.getElementById('formReg');
+        const user = sessionStorage.getItem('currentUser') || "Unknown"; 
+
+        if (!form.rm.value || !form.nama.value || !form.bed.value) {
+            alert("Mohon lengkapi No. RM, Nama, dan Bed!");
+            return;
+        }
+
+        const params = new URLSearchParams(new FormData(form));
+        params.append('user_admin', user); 
+        
+        btn.disabled = true; btn.innerText = "SEDANG MENGIRIM...";
+
+        try {
+            await fetch(WEB_APP_URL, { method: "POST", mode: "no-cors", body: params });
+            alert("Pasien Berhasil Terdaftar!");
+            form.reset();
+            document.getElementById('inputJaminanManual').classList.add('hidden');
+            showTab('live');
+        } catch (e) { 
+            alert("Terjadi kesalahan koneksi."); 
+        } finally { 
+            btn.disabled = false; btn.innerText = "Simpan ke Database Unit Stroke"; 
+        }
+    }
+
+    async function aksiPulangkan(rm) {
+        const user = sessionStorage.getItem('currentUser');
+        if(!confirm("Proses pulang untuk RM " + rm + "?")) return;
+        try {
+            await fetch(`${WEB_APP_URL}?action=pulangkan&rm=${rm}&user=${encodeURIComponent(user)}`, { mode: 'no-cors' });
+            alert("Berhasil dipulangkan.");
+            fetchPasien();
+        } catch (e) { alert("Gagal koneksi."); }
+    }
+
+    function kirimWhatsApp() {
+        const selVal = document.getElementById('selectPasienSOAP').value;
+        if (!selVal) return alert("Pilih pasien terlebih dahulu!");
+
+        const p = JSON.parse(selVal);
+        const data = {
+            rps: document.getElementById('soapRPS')?.value || "-",
+            rpo: document.getElementById('soapRPO')?.value || "-",
+            rpd: document.getElementById('soapRPD')?.value || "-",
+            neuro: document.getElementById('statusNeurologis')?.value || "-",
+            a: document.getElementById('soapA')?.value || "-",
+            pl: document.getElementById('soapP')?.value || "-",
+            td: document.getElementById('ttvTD')?.value || "-",
+            hr: document.getElementById('ttvHR')?.value || "-",
+            rr: document.getElementById('ttvRR')?.value || "-",
+            su: document.getElementById('ttvSuhu')?.value || "-",
+            gcs: document.getElementById('totalGCS')?.innerText || "0",
+            detailGCS: `E${document.getElementById('gcsE').value}V${document.getElementById('gcsV').value}M${document.getElementById('gcsM').value}`
+        };
+
+        const pesanRaw = `*LAPORAN PERKEMBANGAN PASIEN UNIT STROKE*
+----------------------------------------------------
+*IDENTITAS PASIEN*
+Nama: ${p[3]} (RM: ${p[1]})
+Bed: ${p[2]} | DPJP: ${p[6] || '-'}
+
+*S (Subjective)*
+RPS: ${data.rps}
+RPO: ${data.rpo}
+RPD: ${data.rpd}
+
+*O (Objective)*
+TTV: TD ${data.td} mmHg, HR ${data.hr} x/i, RR ${data.rr} x/i, Suhu ${data.su} °C
+GCS: ${data.gcs} (${data.detailGCS})
+Neuro: ${data.neuro}
+
+*A (Assessment)*
+${data.a}
+
+*P (Planning)*
+${data.pl}
+----------------------------------------------------
+_Sent via STROKE-LINK RSPAD Gatot Soebroto_`;
+
+        window.open(`https://wa.me/?text=${encodeURIComponent(pesanRaw)}`, '_blank');
+    }
+
+    // --- 5. KALKULATOR & MODAL ---
+
+    // Fungsi untuk Membuka/Tutup Modal Kalkulator
+    function toggleModalObat() {
+        const modal = document.getElementById('modalObat');
+        modal.classList.toggle('hidden');
+        // Jika ada data BB di form registrasi/SOAP, tarik otomatis ke kalkulator
+        const bbAktif = document.getElementsByName('bb')[0]?.value;
+        if(bbAktif) document.getElementById('calcBB').value = bbAktif;
+    }
+
+    function switchObat() {
+        const obat = document.getElementById('jenisObat').value;
+        const unit = document.getElementById('unitDosis');
+        const sediaan = document.getElementById('sediaanMg');
+        const cc = document.getElementById('pengenceranCc');
+
+        if (obat === "nicardipine") {
+            unit.innerText = "mcg/kg/mnt";
+            sediaan.value = 10;
+            cc.value = 50;
+        } else if (obat === "norepinephrine") {
+            unit.innerText = "mcg/kg/mnt";
+            sediaan.value = 4;
+            cc.value = 50;
+        } else if (obat === "manitol") {
+            unit.innerText = "gram/kgBB";
+            sediaan.value = 200; // 20% artinya 200mg/ml
+            cc.value = 500;
+            alert("Untuk Manitol, dosis biasanya 0.25 - 1 gram/kgBB bolus.");
+        }
+    }
+
+    function hitungDosisEksak() {
+        const jenis = document.getElementById('jenisObat').value;
+        const bb = parseFloat(document.getElementById('calcBB').value);
+        const dosis = parseFloat(document.getElementById('calcDosis').value);
+        const mg = parseFloat(document.getElementById('sediaanMg').value);
+        const cc = parseFloat(document.getElementById('pengenceranCc').value);
+
+        if (!bb || !dosis || !mg || !cc) return alert("Mohon lengkapi semua data!");
+
+        let hasil = 0;
+
+        if (jenis === "nicardipine" || jenis === "norepinephrine") {
+            // Rumus: (Dosis * BB * 60) / ( (Mg * 1000) / Cc )
+            const konsentrasimcg = (mg * 1000) / cc;
+            hasil = (dosis * bb * 60) / konsentrasimcg;
+        } else if (jenis === "manitol") {
+            // Rumus Bolus Manitol 20% (sediaan 0.2 gr/ml)
+            // Hasil dalam CC Bolus
+            hasil = (dosis * bb) / 0.2;
+        }
+
+        document.getElementById('hasilHitung').innerHTML = `${hasil.toFixed(2)} <span class="text-sm">${jenis === 'manitol' ? 'cc (Bolus)' : 'cc/jam'}</span>`;
+    }
+
+
+    const DRUG_CONFIG = {
+        nicardipine: { mg: 10, cc: 50, info: "Nicardipine: Titrasi dimulai 5 mcg/mnt, naikkan 2.5 mcg/mnt tiap 5-15 mnt sampai target TD tercapai." },
+        norepinephrine: { mg: 4, cc: 50, info: "Norepinephrine: Vasopressor kuat. Gunakan Vena Sentral jika memungkinkan untuk cegah nekrosis." },
+        dobutamine: { mg: 250, cc: 50, info: "Dobutamine: Inotropik. Dosis lazim 2.5-20 mcg/kg/mnt. Monitor aritmia." },
+        dopamine: { mg: 200, cc: 50, info: "Dopamine: Dosis inotropik (5-10 mcg/kg/mnt), dosis vasopressor (>10 mcg/kg/mnt)." },
+        manitol: { mg: 100, cc: 500, info: "Manitol 20%: Sediaan 500cc mengandung 100gr Manitol (0.2gr/ml). Diberikan bolus cepat." }
+    };
+
+    function updateDrugSetting() {
+        const val = document.getElementById('jenisObat').value;
+        const config = DRUG_CONFIG[val];
+        document.getElementById('sediaanMg').value = config.mg;
+        document.getElementById('pengenceranCc').value = config.cc;
+        document.getElementById('boxHasil').classList.add('hidden');
+        
+        // Auto-switch metode untuk Manitol
+        if(val === 'manitol') {
+            document.getElementById('metodeHitung').value = 'mcg_kg_min';
+            document.getElementById('metodeHitung').disabled = true;
+        } else {
+            document.getElementById('metodeHitung').disabled = false;
+        }
+    }
+
+    function kalkulasiEksak() {
+        const obat = document.getElementById('jenisObat').value;
+        const metode = document.getElementById('metodeHitung').value;
+        const bb = parseFloat(document.getElementById('calcBB').value) || 0;
+        const dosis = parseFloat(document.getElementById('calcDosis').value) || 0;
+        const mg = parseFloat(document.getElementById('sediaanMg').value) || 0;
+        const cc = parseFloat(document.getElementById('pengenceranCc').value) || 0;
+
+        if (!dosis || !mg || !cc) return alert("Lengkapi Dosis dan Sediaan!");
+
+        let kecepatan = 0;
+        let rumusteks = "";
+        const konsentrasi = (mg * 1000) / cc; // mcg/cc
+
+        if (obat === 'manitol') {
+            // Manitol dihitung dalam Gram
+            // Rumus: (Dosis Gram * BB) / 0.2
+            kecepatan = (dosis * bb) / 0.2;
+            rumusteks = `<b>${DRUG_CONFIG[obat].info}</b><br><br>Rumus Bolus: (Dosis ${dosis}gr x BB ${bb}kg) / 0.2 (Konsentrasi Manitol 20%) = <b>${kecepatan.toFixed(1)} cc Bolus.</b>`;
+        } else {
+            if (metode === "mcg_kg_min") {
+                if (!bb) return alert("BB wajib diisi!");
+                kecepatan = (dosis * bb * 60) / konsentrasi;
+                rumusteks = `<b>${DRUG_CONFIG[obat].info}</b><br><br>1. Konsentrasi: (${mg}mg x 1000) / ${cc}cc = ${konsentrasi} mcg/cc.<br>2. Rumus: (Dosis ${dosis} x BB ${bb} x 60mnt) / ${konsentrasi} mcg/cc = <b>${kecepatan.toFixed(2)} cc/jam.</b>`;
+            } else {
+                kecepatan = (dosis * 60) / konsentrasi;
+                rumusteks = `<b>${DRUG_CONFIG[obat].info}</b><br><br>1. Konsentrasi: (${mg}mg x 1000) / ${cc}cc = ${konsentrasi} mcg/cc.<br>2. Rumus Flat: (Dosis ${dosis}mcg/mnt x 60mnt) / ${konsentrasi} mcg/cc = <b>${kecepatan.toFixed(2)} cc/jam.</b>`;
             }
         }
 
-        function renderMonthlyChart(stats) {
-            const ctx = document.getElementById('monthlyChart').getContext('2d');
-            if (myChart) myChart.destroy();
-            const labels = Object.keys(stats);
-            const dataNeu = labels.map(m => stats[m].neurologi);
-            const dataBS = labels.map(m => stats[m].bedahSaraf);
+        document.getElementById('hasilHitung').innerHTML = `${kecepatan.toFixed(2)} <span class="text-sm">${obat === 'manitol' ? 'cc (BOLUS)' : 'cc/jam'}</span>`;
+        document.getElementById('penjelasanRumus').innerHTML = rumusteks;
+        document.getElementById('boxHasil').classList.remove('hidden');
+    }
 
-            myChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Neurologi', data: dataNeu, backgroundColor: '#1e40af', borderRadius: 6 },
-                        { label: 'Bedah Saraf', data: dataBS, backgroundColor: '#991b1b', borderRadius: 6 }
-                    ]
-                },
-                options: { 
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                }
-            });
+    function bukaDetailPasien(p) {
+        document.getElementById('detNama').innerText = p[3];
+        document.getElementById('detRM').innerText = "RM: " + p[1];
+        document.getElementById('detBed').innerText = "Bed " + p[2];
+        document.getElementById('detDiagnosa').innerText = p[4] || "-";
+        document.getElementById('detBB').innerText = (p[5] || "-") + " kg";
+        document.getElementById('detDPJP').innerText = p[6] || "-";
+        document.getElementById('detSpesialis').innerText = p[7] || "-";
+        document.getElementById('detJaminan').innerText = p[8] || "-";
+        document.getElementById('detAlamat').innerText = p[9] || "-";
+        document.getElementById('detAgama').innerText = p[11] || "-";
+        document.getElementById('modalDetailPasien').classList.remove('hidden');
+    }
+
+    function tutupDetailPasien() {
+        document.getElementById('modalDetailPasien').classList.add('hidden');
+    }
+
+    // --- 6. INITIALIZATION ---
+
+    window.addEventListener('load', () => { 
+        const logged = sessionStorage.getItem('isLoggedIn');
+        const user = sessionStorage.getItem('currentUser');
+        
+        if (logged === 'true' && user) {
+            loginSuccess(user);
+        } else {
+            document.getElementById('loginOverlay').classList.remove('hidden');
         }
+        updateAvailableBeds(); 
+    });
 
-        setInterval(() => {
-            document.getElementById('live-clock').innerText = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' });
-        }, 1000);
 
-        window.onload = loadDataFromServer;
-    </script>
+    function aturTampilanRole() {
+        const role = sessionStorage.getItem('role');
+        
+        // Ambil elemen navigasi (tombol tab)
+        const btnReg = document.getElementById('btn-reg');
+        const btnCare = document.getElementById('btn-care');
+        
+        // Ambil elemen konten (isi tab)
+        const contentReg = document.getElementById('reg');
+        const contentCare = document.getElementById('care');
+
+        if (role === 'guest') {
+            // 1. Sembunyikan Tombol Navigasi
+            if (btnReg) btnReg.style.display = 'none';
+            if (btnCare) btnCare.style.display = 'none';
+            
+            // 2. Sembunyikan Konten (Proteksi tambahan jika user mencoba bypass lewat konsol)
+            if (contentReg) contentReg.innerHTML = "<div class='p-10 text-center font-bold text-gray-400'>Akses Dibatasi: Menu ini hanya untuk Petugas.</div>";
+            if (contentCare) contentCare.innerHTML = "<div class='p-10 text-center font-bold text-gray-400'>Akses Dibatasi: Menu ini hanya untuk Petugas.</div>";
+            
+            // 3. Tampilkan Floating Calculator (opsional, khusus tamu)
+            const floatBtn = document.getElementById('floatingCalc');
+            if (floatBtn) floatBtn.classList.remove('hidden');
+        } else {
+            // Jika Petugas, pastikan semua menu muncul kembali
+            if (btnReg) btnReg.style.display = 'flex';
+            if (btnCare) btnCare.style.display = 'flex';
+        }
+    }
+
+    function renderPatientList(data) {
+        const container = document.getElementById('containerPasien');
+        container.innerHTML = '';
+        
+        // Ambil role saat ini
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { role: 'guest' };
+
+        data.forEach(pasien => {
+            const card = document.createElement('div');
+            card.className = "glass p-5 mb-4 relative overflow-hidden";
+            
+            // Logika Kondisional: Jika BUKAN guest, tampilkan tombol aksi
+            let tombolAksi = '';
+            if (currentUser.role !== 'guest') {
+                tombolAksi = `
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="showDetail('${pasien.id}')" class="flex-1 bg-black text-white py-2 rounded-xl text-[10px] font-bold uppercase">Detail</button>
+                        <button onclick="pulangkanPasien('${pasien.id}')" class="bg-red-100 text-red-600 px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Pulangkan</button>
+                    </div>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] font-black text-blue-600 uppercase mb-1">Bed ${pasien.bed}</p>
+                        <h3 class="text-lg font-black text-gray-800 uppercase">${pasien.nama}</h3>
+                        <p class="text-[10px] text-gray-500 font-bold">RM: ${pasien.rm}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="px-3 py-1 bg-gray-100 rounded-full text-[9px] font-black uppercase">${pasien.jaminan}</span>
+                    </div>
+                </div>
+                ${tombolAksi} 
+            `;
+            
+            container.appendChild(card);
+        });
+    }
+
+
+    function toggleManualJaminan() {
+        const select = document.getElementById('selectJaminan');
+        const manualDiv = document.getElementById('inputJaminanManual');
+        const finalInput = document.getElementById('finalJaminan');
+        const customInput = document.getElementById('jaminanCustom');
+
+        if (select.value === "MANUAL") {
+            manualDiv.classList.remove('hidden');
+            finalInput.value = customInput.value;
+        } else {
+            manualDiv.classList.add('hidden');
+            finalInput.value = select.value;
+        }
+    }
+
+
+</script>
+
+    <div id="modalObat" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+    <div class="glass w-full max-w-lg p-6 overflow-y-auto max-h-[95vh] shadow-2xl bg-white/95 border-red-100">
+        <div class="flex justify-between items-center mb-6 border-b border-red-100 pb-4">
+            <div>
+                <h3 class="text-xl font-black text-red-800 uppercase tracking-tighter">Clinical Drug Calculator</h3>
+                <p class="text-[9px] text-gray-500 font-bold uppercase">Evidence-Based Nursing Protocol - Unit Stroke</p>
+            </div>
+            <button onclick="toggleModalObat()" class="h-8 w-8 flex items-center justify-center bg-gray-100 rounded-full text-gray-400 hover:bg-red-600 hover:text-white transition-all">✕</button>
+        </div>
+
+        <div class="space-y-5">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black text-gray-400 uppercase ml-1">Pilih Obat</label>
+                    <select id="jenisObat" onchange="updateDrugSetting()" class="w-full p-3 bg-gray-50 rounded-xl text-xs font-bold border-none shadow-inner focus:ring-2 focus:ring-red-500">
+                        <option value="nicardipine">Nicardipine (Perdipine)</option>
+                        <option value="norepinephrine">Norepinephrine (Vascon)</option>
+                        <option value="dobutamine">Dobutamine (Dobuject)</option>
+                        <option value="dopamine">Dopamine</option>
+                        <option value="manitol">Manitol 20%</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[9px] font-black text-gray-400 uppercase ml-1">Metode Hitung</label>
+                    <select id="metodeHitung" class="w-full p-3 bg-gray-50 rounded-xl text-xs font-bold border-none shadow-inner">
+                        <option value="mcg_kg_min">mcg/kgBB/menit</option>
+                        <option value="mcg_min">mcg/menit (Flat)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100">
+                    <label class="text-[9px] font-black text-blue-800 uppercase">Berat Badan (kg)</label>
+                    <input type="number" id="calcBB" class="w-full bg-transparent border-none focus:ring-0 text-2xl font-black text-blue-900" placeholder="0">
+                </div>
+                <div class="bg-red-50/50 p-4 rounded-2xl border border-red-100">
+                    <label class="text-[9px] font-black text-red-800 uppercase">Dosis Target</label>
+                    <input type="number" id="calcDosis" class="w-full bg-transparent border-none focus:ring-0 text-2xl font-black text-red-900" placeholder="0">
+                </div>
+            </div>
+
+            <div class="p-4 bg-gray-100/50 rounded-2xl">
+                <p class="text-[9px] font-black text-gray-400 uppercase mb-3 text-center tracking-widest">Sediaan & Pengenceran (Bisa Diedit)</p>
+                <div class="flex items-center gap-3">
+                    <input type="number" id="sediaanMg" placeholder="mg" class="w-full p-3 rounded-xl bg-white border-none text-center font-bold shadow-sm">
+                    <span class="font-bold text-gray-300">dalam</span>
+                    <input type="number" id="pengenceranCc" placeholder="cc" class="w-full p-3 rounded-xl bg-white border-none text-center font-bold shadow-sm">
+                </div>
+            </div>
+
+            <div id="boxHasil" class="hidden animate-in fade-in zoom-in duration-300">
+                <div class="bg-green-700 p-5 rounded-[2rem] text-center text-white shadow-xl shadow-green-100 mb-4">
+                    <p class="text-[10px] font-bold uppercase opacity-70 tracking-widest mb-1">Kecepatan Syringe Pump</p>
+                    <h4 id="hasilHitung" class="text-4xl font-black italic">0.00 <span class="text-sm not-italic opacity-80 uppercase">cc/jam</span></h4>
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="h-2 w-2 bg-green-500 rounded-full"></span>
+                        <p class="text-[10px] font-black text-gray-800 uppercase">Clinical Rationale :</p>
+                    </div>
+                    <div id="penjelasanRumus" class="text-[11px] leading-relaxed text-gray-600 bg-gray-50 p-3 rounded-lg border-l-4 border-green-500"></div>
+                </div>
+            </div>
+
+            <button onclick="kalkulasiEksak()" class="w-full bg-black text-white py-5 rounded-2xl font-black shadow-lg hover:bg-gray-800 transition-all active:scale-95 text-xs tracking-[0.2em] uppercase">Proses Kalkulasi</button>
+        </div>
+    </div>
+</div>
+
+<div id="floatingCalc" class="fixed bottom-24 right-6 z-40 hidden">
+    <button onclick="toggleModalObat()" class="bg-red-600 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center animate-bounce hover:scale-110 transition-all">
+        <span class="text-2xl">💊</span>
+    </button>
+</div>
+
+<div id="modalDetailPasien" class="fixed inset-0 bg-black/60 hidden z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="glass w-full max-w-sm p-6 bg-white shadow-2xl relative overflow-y-auto max-h-[90vh]">
+        <button onclick="tutupDetailPasien()" class="absolute top-4 right-4 text-gray-400 font-bold p-2">✕</button>
+        
+        <div class="text-center mb-6">
+            <div id="detBed" class="inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black mb-2 uppercase">Bed --</div>
+            <h3 id="detNama" class="text-xl font-black text-gray-800 uppercase leading-tight">Nama Pasien</h3>
+            <p id="detRM" class="text-xs text-gray-500 font-bold">RM: 000000</p>
+        </div>
+
+        <div class="space-y-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+            <div class="grid grid-cols-2 gap-4 border-b border-gray-200 pb-3">
+                <div>
+                    <p class="text-[8px] font-black text-gray-400 uppercase">DPJP</p>
+                    <p id="detDPJP" class="text-sm font-bold text-gray-700">-</p>
+                </div>
+                <div>
+                    <p class="text-[8px] font-black text-gray-400 uppercase">Spesialisasi</p>
+                    <p id="detSpesialis" class="text-sm font-bold text-gray-700">-</p>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-[8px] font-black text-gray-400 uppercase">Diagnosa Masuk</p>
+                <p id="detDiagnosa" class="text-sm font-bold text-gray-700 italic">-</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                    <p class="text-[8px] font-black text-gray-400 uppercase">Agama</p>
+                    <p id="detAgama" class="text-sm font-bold text-gray-700">-</p>
+                </div>
+                <div>
+                    <p class="text-[8px] font-black text-gray-400 uppercase">Jaminan</p>
+                    <p id="detJaminan" class="text-sm font-bold text-gray-700">-</p>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-[8px] font-black text-gray-400 uppercase">Alamat Lengkap</p>
+                <p id="detAlamat" class="text-xs font-medium text-gray-600">-</p>
+            </div>
+
+            <div class="pt-2 border-t border-gray-200">
+                <p class="text-[8px] font-black text-gray-400 uppercase">Berat Badan</p>
+                <p id="detBB" class="text-sm font-bold text-gray-700">- kg</p>
+            </div>
+        </div>
+
+        <button onclick="tutupDetailPasien()" class="w-full mt-6 py-3 bg-gray-800 text-white rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 transition-all">Tutup Detail</button>
+    </div>
+</div>
+
+
 </body>
 </html>
